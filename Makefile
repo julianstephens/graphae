@@ -3,7 +3,7 @@ WORKER_IMAGE = golang:1.15-alpine3.13
 # Docker image to generate OAS3 specs
 OAS3_GENERATOR_DOCKER_IMAGE = openapitools/openapi-generator-cli:latest-release
 
-.PHONY: swag up ci-swaggen
+.PHONY: swag up ci-swaggen build
 
 swag:
 	watch -n 10 swag init -g app.go
@@ -26,5 +26,10 @@ openapi:
 	@echo "[OAS3] Cleaning up generated files"
 	@docker run --rm -v $(PWD)/docs/v3:/work $(WORKER_IMAGE) \
 	  sh -c "mv -f /work/openapi/openapi.json /work ; mv -f /work/openapi/openapi.yaml /work ; rm -rf /work/openapi"
+
 run:
 	@go run .
+
+build:
+	@rm -rf build/
+	@go build -o build/graphae

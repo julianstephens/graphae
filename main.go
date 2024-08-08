@@ -1,23 +1,27 @@
 package main
 
 import (
-	"image"
-
-	"github.com/julianstephens/graphae/utils"
-	"github.com/op/go-logging"
+	"github.com/alecthomas/kong"
+	"github.com/julianstephens/graphae/cli"
 )
 
 func main() {
-	logging.SetLevel(logging.DEBUG, utils.LOG.Module)
-	img, err := utils.Open("img/bird.jpeg")
-	err = utils.HandleError(err, "something went wrong")
-	if err != nil {
-		utils.LOG.Panic("something went wrong")
+	cli := cli.CLI{
+		Globals: cli.Globals{
+			Version: cli.VersionFlag("0.1.1"),
+		},
 	}
 
-	cropped := utils.Crop(img, image.Rect(0, 0, 100, 100))
-	err = utils.Write("img/res.jpeg", cropped, utils.JPEGEncoder(100))
-	if err != nil {
-		utils.LOG.Panic("something went wrong")
-	}
+	ctx := kong.Parse(&cli,
+		kong.Name("graphae"),
+		kong.Description("An image processing CLI"),
+		kong.UsageOnError(),
+		kong.ConfigureHelp(kong.HelpOptions{
+			Compact: true,
+		}),
+		kong.Vars{
+			"version": "0.0.1",
+		})
+	err := ctx.Run(&cli.Globals)
+	ctx.FatalIfErrorf(err)
 }
